@@ -1,0 +1,8 @@
+version: "3.2"
+
+services:
+ py-mongo:
+  image: mongo:latest
+  container_name: py-mongo
+  ports:
+   - "27017:27017" 
