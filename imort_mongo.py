@@ -11,9 +11,11 @@ data = pd.read_csv('healthcare_dataset.csv')
 
 
 def clean_data(data):
-    # Supprimer les doublons
+    data = pd.read_csv('healthcare_dataset.csv')
+    # Supprimer les doublons et les valeurs manquantes
     data = data.drop_duplicates()
     data = data.dropna()
+    # Normaliser les noms et arrondir les montants
     data['Name'] = data['Name'].str.title()
     data['Name'] = data['Name'].str.strip()
     data['Billing Amount'] = data['Billing Amount'].round(2)
@@ -22,6 +24,7 @@ def clean_data(data):
 
 
 def import_to_mongodb(data):
+    #Connecter à MongoDB et créer la base de données et la collection
     client = pymongo.MongoClient("mongodb://localhost:27017/")
     db = client['DataSoluTech']
     
