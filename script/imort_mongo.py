@@ -43,5 +43,15 @@ def import_to_mongodb(data):
         print(f"Chunk {i+1}/{num_chunks} imported successfully.")
     
 if __name__ == "__main__":
-    cleaned_data = clean_data(data)
-    import_to_mongodb(cleaned_data) 
+    file_path = os.getenv("INPUT_DATA_PATH")
+    mongodb_uri = os.getenv("MONGODB_URI")
+    db_name = os.getenv("MONGO_INITDB_DATABASE")
+    collection_name = os.getenv("COLLECTION")
+
+    try:
+        insert_data(file_path, mongodb_uri, db_name, collection_name)
+    except Exception as e:
+        print(f"Erreur lors de l'insertion : {e}")
+    try:
+        cleaned_data = clean_data(data)
+        import_to_mongodb(cleaned_data) 

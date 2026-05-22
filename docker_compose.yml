@@ -21,9 +21,8 @@ services:
     depends_on:
       - mongodb
     volumes:
-      - ./scripts:/app/src
-      - ./tests:/app/tests
-      - ./data:/app/data
+      - ./scripts:/app/scripts
+      - ./data:/app/database
     env_file:
       - .env
     networks:

@@ -1,10 +1,10 @@
 FROM python:3
 
-WORKDIR /usr/src/app
+WORKDIR /usr/app
 
-COPY requirements.txt ./
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY script/ /app/script/
 
-CMD [ "python", "./your-daemon-or-script.py" ]
+CMD ["bash", "-c", "python script/data_prep.py && python script/import_mongo.py"]
