@@ -8,9 +8,11 @@ wheels/
 
 # Virtual environments
 .venv
+.env
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints
-
+import.ipynb
 # Dossier
 Livrables/
+./data/cleaned_healthcare_dataset.csv

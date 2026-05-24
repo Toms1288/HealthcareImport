@@ -1,15 +1,10 @@
 import pandas as pd
-import pymongo
 import os
-import numpy as np
-
-data = pd.read_csv('healthcare_dataset.csv')
+from dotenv import load_dotenv
 
 
-
-
-def clean_data(data):
-    data = pd.read_csv('healthcare_dataset.csv')
+def clean_data(file_path):
+    data = pd.read_csv(file_path)
     # Supprimer les doublons et les valeurs manquantes
     data = data.drop_duplicates()
     data = data.dropna()
@@ -20,10 +15,14 @@ def clean_data(data):
     return data
 
 if __name__ == "__main__":
-    file_path = os.getenv("INPUT_DATA_PATH")
+    load_dotenv()
+    input_path = os.environ.get("INPUT_DATA_PATH")
+    output_path = os.environ.get("OUTPUT_DATA_PATH")
     try:
-        cleaned_data = clean_data(data)
-        cleaned_data.to_csv(file_path, index=False)
-        print(f"Data cleaned and saved to {file_path}")
+        print(pd.read_csv(input_path).shape)
+        cleaned_data = clean_data(input_path)
+        cleaned_data.to_csv(output_path, index=False)
+        print(pd.read_csv(output_path).shape)
+        print(f"Data cleaned and saved to {output_path}")
     except Exception as e:
         print(f"Erreur lors du nettoyage des données : {e}")
