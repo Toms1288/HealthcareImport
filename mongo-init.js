@@ -2,7 +2,7 @@ db = db.getSiblingDB(process.env.MONGO_INITDB_DATABASE);
 
 // Création d'utilisateur d'application avec des permissions 
 db.createUser({
-    user: process.env.MONGO_APP_USER,
+    user: process.env.MONGO_APP_USERNAME,
     pwd: process.env.MONGO_APP_PASSWORD,
     roles: [
         {
@@ -13,144 +13,106 @@ db.createUser({
             role: "dbAdmin",
             db: process.env.MONGO_INITDB_DATABASE
         },
-        {
-            role: "readWrite",
-            db: "test_database"
-        },
-        {
-            role: "dbAdmin",
-            db: "test_database"
-        }
     ],
     mechanisms: ["SCRAM-SHA-256"]  // Utilise SHA-256 pour le hachage
 });
-
-// Collection Patient
-db.createCollection("patient", {
-    validator: {
-        $jsonSchema: {
-            bsonType: "object",
-            required: ["name", "age", "gender", "bloodType"],
-            properties: {
-                name: {
-                bsonType: "string",
-                description: "Nom du patient"
-                },
-                age: {
-                bsonType: "number",
-                description: "Âge du patient"
-                },
-                gender: {
-                bsonType: "string",
-                description: "Genre du patient"
-                },
-                bloodType: {
-                bsonType: "string",
-                description: "Groupe sanguin"
-                }
+// Création de la collection avec validation de schéma
+db.createCollection(process.env.COLLECTION, {
+   validator: {
+      $jsonSchema: {
+         bsonType: "object",
+         required: [
+            "patient_id",
+            "name",
+            "age",
+            "gender",
+            "blood_type",
+            "medical_condition",
+            "date_of_admission",
+            "doctor",
+            "hospital",
+            "insurance_provider",
+            "billing_amount",
+            "room_number",
+            "admission_type",
+            "discharge_date",
+            "medication",
+            "test_results"
+         ],
+         properties: {
+            patient_id: {
+               bsonType: "int",
+               description: "Unique identifier for each patient."
+            },
+            name: {
+               bsonType: "string",
+               description: "Patient's name must be a string."
+            },
+            age: {
+               bsonType: "int",
+               minimum: 0,
+               maximum: 150,
+               description: "Age must be an integer between 0 and 150."
+            },
+            gender: {
+               bsonType: "string",
+               enum: ["Male", "Female", "Other"],
+               description: "Gender must be 'Male', 'Female', or 'Other'."
+            },
+            blood_type: {
+               bsonType: "string",
+               enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+               description: "Blood type must be a valid blood type."
+            },
+            medical_condition: {
+               bsonType: "string",
+               description: "Medical condition must be a string."
+            },
+            date_of_admission: {
+               bsonType: "string",
+               description: "Must be a date"
+            },
+            doctor: {
+               bsonType: "string",
+               description: "Doctor's name must be a string."
+            },
+            hospital: {
+               bsonType: "string",
+               description: "Hospital name must be a string."
+            },
+            insurance_provider: {
+               bsonType: "string",
+               description: "Insurance provider must be a string."
+            },
+            billing_amount: {
+               bsonType: "double",
+               minimum: 0,
+               description: "Billing amount must be a non-negative number."
+            },
+            room_number: {
+               bsonType: "int",
+               minimum: 1,
+               description: "Room number must be a positive integer."
+            },
+            admission_type: {
+               bsonType: "string",
+               enum: ["Elective", "Urgent", "Emergency"],
+               description: "Admission type must be one of the specified values."
+            },
+            discharge_date: {
+               bsonType: "string",
+               description: "Must be a date"
+            },
+            medication: {
+               bsonType: "string",
+               description: "Medication details must be a string."
+            },
+            test_results: {
+               bsonType: "string",
+               enum: ["Normal", "Abnormal", "Inconclusive"],
+               description: "Test results must be one of the specified values."
             }
-        }
-    }
+         }
+      }
+   }
 });
-  
-// Collection Medical
-db.createCollection("medical", {
-    validator: {
-        $jsonSchema: {
-            bsonType: "object",
-            required: ["patientId", "condition", "medication", "testResults", "doctor"],
-            properties: {
-                patientId: {
-                bsonType: "objectId",
-                description: "Référence au patient"
-                },
-                condition: {
-                bsonType: "string",
-                description: "État médical"
-                },
-                medication: {
-                bsonType: "string",
-                description: "Médicaments"
-                },
-                testResults: {
-                bsonType: "string",
-                description: "Résultats des tests"
-                },
-                doctor: {
-                bsonType: "string",
-                description: "Nom du docteur"
-                }
-            }
-        }
-    }
-});
-
-// Collection Admission
-db.createCollection("admission", {
-    validator: {
-        $jsonSchema: {
-            bsonType: "object",
-            required: ["patientId", "dateOfAdmission", "hospital", "roomNumber", "admissionType"],
-            properties: {
-                patientId: {
-                bsonType: "objectId",
-                description: "Référence au patient"
-                },
-                dateOfAdmission: {
-                bsonType: "date",
-                description: "Date d'admission"
-                },
-                dischargeDate: {
-                bsonType: "date",
-                description: "Date de sortie"
-                },
-                admissionType: {
-                bsonType: "string",
-                description: "Type d'admission "
-                },
-                roomNumber: {
-                bsonType: "number",
-                description: "Numéro de chambre"
-                },
-                hospital: {
-                bsonType: "string",
-                description: "Nom de l'hôpital"
-                }
-            }
-        }
-    }
-})
-
-// Collection Billing
-db.createCollection("billing", {
-    validator: {
-        $jsonSchema: {
-            bsonType: "object",
-            required: ["patientId", "insuranceProvider", "amount"],
-            properties: {
-                patientId: {
-                bsonType: "objectId",
-                description: "Référence au patient"
-                },
-                insuranceProvider: {
-                bsonType: "string",
-                description: "Fournisseur d'assurance"
-                },
-                amount: {
-                bsonType: "decimal",
-                description: "Montant de la facturation"
-                }
-            }
-        }
-    }
-})
-
-
-// Création des autres index
-db.patients.createIndex({ "name": 1 })
-db.medical.createIndex({ "patientId": 1 })
-db.admission.createIndex({ 
-    "patientId": 1,
-    "dateOfAdmission": 1
- })
-db.billing.createIndex({ "patientId": 1 })

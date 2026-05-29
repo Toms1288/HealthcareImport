@@ -7,34 +7,30 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
-      # - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
       - ./data:/data
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
     env_file:
       - .env
     networks:
-      - app-network
+      - app_network
 
   python_service:
     build:
       context: .
-      dockerfile: Dockerfile
     container_name: python_service
     depends_on:
       - mongodb
     volumes:
-      - ./script:/script
-      - ./data:/data
+      - ./scripts:/app/scripts
+      - ./data:/app/database
     env_file:
       - .env
     networks:
-      - app-network
-    environment:
-      MONGO_URI: mongodb://mongodb:27017
+      - app_network
     
 volumes:
   mongodb_data:
-  app:
 
 networks:
-  app-network:
+  app_network:
     driver: bridge
