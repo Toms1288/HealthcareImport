@@ -69,7 +69,7 @@ db.createCollection(process.env.COLLECTION, {
                description: "Medical condition must be a string."
             },
             date_of_admission: {
-               bsonType: "string",
+               bsonType: "Date",
                description: "Must be a date"
             },
             doctor: {
@@ -100,7 +100,7 @@ db.createCollection(process.env.COLLECTION, {
                description: "Admission type must be one of the specified values."
             },
             discharge_date: {
-               bsonType: "string",
+               bsonType: "Date",
                description: "Must be a date"
             },
             medication: {
