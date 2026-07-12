@@ -70,7 +70,7 @@ db.createCollection(process.env.COLLECTION, {
             },
             date_of_admission: {
                bsonType: "Date",
-               description: "Must be a date"
+               description: "Date of admission must be a date"
             },
             doctor: {
                bsonType: "string",
@@ -101,7 +101,7 @@ db.createCollection(process.env.COLLECTION, {
             },
             discharge_date: {
                bsonType: "Date",
-               description: "Must be a date"
+               description: "Discharge date must be a date"
             },
             medication: {
                bsonType: "string",
