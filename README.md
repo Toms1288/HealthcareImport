@@ -55,7 +55,7 @@ Les services démarreront automatiquement :
 |--------|--------|-------------|----------|
 | `mongodb_data` | Volume Docker | `/data/db` | Données persistantes MongoDB |
 | `./data` | Local | `/app/database` | Données CSV (input/output) |
-| `./scripts` | Local | `/app/scripts` | Scripts Python |
+| `./script` | Local | `/app/script` | Scripts Python |
 | `./mongo-init.js` | Local | `/docker-entrypoint-initdb.d/` | Initialisation MongoDB |
 
 ### Réseau Docker
@@ -218,7 +218,8 @@ Projet 5/
 ├── mongo-init.js                   # Script d'initialisation MongoDB (utilisateurs, schéma)
 ├── README.md                       # Documentation
 ├── scripts/
-│   └── import_to_mongodb.py       # Script d'import des données CSV
+    ├── data_prep.py                # Script Python de néttoyage et préparation des données
+│   └── import_mongodb.py           # Script d'import des données CSV dans MongoDB
 └── data/
     ├── healthcare_dataset.csv      # Données brutes (input) ← À fournir
     └── cleaned_healthcare_dataset.csv # Données nettoyées (généré)
@@ -310,20 +311,29 @@ db.Healthcare.insertOne({
   age: 45,
   gender: "Male",
   blood_type: "O+",
+  medical_condition: "Obesity",
   date_of_admission: ISODate("2026-05-27"),
+  doctor: "Samantha Davies",  
   hospital: "Hôpital Central",
-  discharge_date: ISODate("2026-06-10")
+  insurance_provider: "Medicare",
+  billing_amount: 33643.33,
+  room_number: 352,
+  admission_type: "Emergency",
+  discharge_date: ISODate("2026-06-10"),
+  medication: "Ibuprofen",
+  test_resylts: "Inconclusive",
 })
 ```
 
 ### Validation de schéma JSON
 
 Tous les documents doivent respecter :
-- Champs requis : `_id`, `patient_id`, `name`, `age`, `gender`, `blood_type`, `date_of_admission`, `hospital`
+- Champs requis : `_id`, `patient_id`, `name`, `age`, `gender`, `blood_type`, `date_of_admission`, `hospital`,
 - Âge : entier entre 0 et 150
 - Sexe : "Male", "Female" ou "Other"
 - Groupe sanguin : un des 8 types valides
 - Dates : format ISO 8601
+- Test Results : "Normal", "Abnormal" ou " Inconclusive"
 
 ## ✅ Checklist de démarrage
 
@@ -360,10 +370,6 @@ Tous les documents doivent respecter :
 
 Thomas LECLERCQ
 
-## 📄 Licence
-
-Projet personnel - OPC DE (Openclassrooms - Data Engineer)
-
 ---
 
-**Dernière mise à jour** : 28 mai 2026
+**Dernière mise à jour** : 12/07/2026
