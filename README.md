@@ -321,7 +321,7 @@ db.Healthcare.insertOne({
   admission_type: "Emergency",
   discharge_date: ISODate("2026-06-10"),
   medication: "Ibuprofen",
-  test_resylts: "Inconclusive",
+  test_results: "Inconclusive",
 })
 ```
 

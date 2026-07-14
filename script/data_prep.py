@@ -19,8 +19,8 @@ def clean_data(file_path):
     data['name'] = data['name'].str.strip()
     data['billing_amount'] = data['billing_amount'].round(2).abs()
     # Normaliser les dates
-    data['date_of_admission'] = datetime.datetime.fromtimestamp(data['date_of_admission'])
-    data['discharge_date'] = datetime.datetime.fromtimestamp(data['discharge_date'])
+    data['date_of_admission'] = pd.to_datetime(data['date_of_admission'], unit='s')
+    data['discharge_date'] = pd.to_datetime(data['discharge_date'], unit='s')
     # Modification de l'ordre des colonnes
     data = data[["patient_id","name","age","gender","blood_type","medical_condition","date_of_admission","doctor","hospital","insurance_provider",
                  "billing_amount","room_number","admission_type","discharge_date","medication","test_results"]]
