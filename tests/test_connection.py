@@ -10,6 +10,20 @@ class TestConnection(unittest.TestCase):
             """Configuration initiale avant chaque test"""
             self.uri = os.getenv('MONGODB_URI')
             self.db_name = os.getenv('MONGO_INITDB_DATABASE')
+            self.invalid_uri = "mongodb://invalid_user:invalid_pass@localhost:27017"
+                
+    def test_connection_invalid_uri(self):
+        """Test d'une connexion avec une URI invalide"""
+        try:
+            client = MongoClient(self.invalid_uri, serverSelectionTimeoutMS=1000)
+            client.admin.command('ping')
+            self.fail("La connexion avec URI invalide a réussi, ce qui est inattendu")
+        except errors.ConnectionFailure:
+            self.assertTrue(True)
+            print("Connexion avec URI invalide échouée comme prévu")
+        finally:
+            if 'client' in locals():
+                client.close()
 
             
     def test_connection(self):
@@ -31,13 +45,7 @@ class TestConnection(unittest.TestCase):
         finally:
             if 'client' in locals():
                 client.close()
-                
-    def test_connection_invalid_uri(self):
-        """Test d'une connexion avec une URI invalide"""
-        invalid_uri = "mongodb://invalid_user:invalid_pass@localhost:27017"
-        with self.assertRaises(errors.ConfigurationError):
-            MongoClient(invalid_uri, serverSelectionTimeoutMS=1000)
-            print("Connexion avec URI invalide échouée comme prévu")
+
 
             
     def test_database_CRUD(self):
@@ -46,9 +54,10 @@ class TestConnection(unittest.TestCase):
             client = MongoClient(self.uri)
             db = client[self.db_name]
             
-            # Création d'une collection pour tester
+            # Création d'une collection
             collection = db.test_collection
             print(f"Collection créée: {collection.name}")
+            # Test d'insertion
             result = collection.insert_one({"test": "data"})
             print(f"Document inséré avec succès: {result.inserted_id}")
             
@@ -76,8 +85,8 @@ class TestConnection(unittest.TestCase):
         finally:
             if 'client' in locals():
                 collection.drop()  # Nettoyer la collection de test
+                print("Collection de test supprimée")
                 client.close()
-
 
 if __name__ == '__main__':
     unittest.main()

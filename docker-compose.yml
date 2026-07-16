@@ -28,6 +28,7 @@ services:
       mongodb:
         condition: service_healthy
     volumes:
+      - ./tests:/app/tests
       - ./scripts:/app/scripts
       - ./data:/app/data
     env_file:

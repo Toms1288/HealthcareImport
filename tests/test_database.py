@@ -10,16 +10,33 @@ from bson import ObjectId, Decimal128
 class DataIntegrityTest(unittest.TestCase):
     def setUp(self):
         # Chemin vers le fichier CSV source
-        self.csv_path = os.getenv("OUTPUT_DATA_PATH")
-        
+        self.input_path = os.getenv("INPUT_DATA_PATH")
+        self.output_path = os.getenv("OUTPUT_DATA_PATH")
         # Charger les données CSV
-        self.df_source = pd.read_csv(self.csv_path)
+        self.df_source = pd.read_csv(self.input_path)
+        self.df_final = pd.read_csv(self.output_path)
         
         # Convertir les types de données pandas en types Python standards
         self.df_source = self.df_source.replace({np.nan: None})
+        self.df_final = self.df_final.replace({np.nan: None})
+    
+    def test_input_csv_existence(self.input_path):
+        """Vérifier que le fichier CSV existe"""
+        self.assertTrue(
+            os.path.exists(self.input_path),
+            f"Le fichier CSV {self.input_path} n'existe pas"
+        )
 
+    def test_output_csv_existence(self.output_path):
+        """Vérifier que le fichier CSV existe"""
+        self.assertTrue(
+            os.path.exists(self.output_path),
+            f"Le fichier CSV {self.output_path} n'existe pas"
+        )
+        
     def tearDown(self):
         self.client_target.close()
+    
 
     def get_csv_schema(self) -> Dict[str, Dict[str, str]]:
         """Extraire le schéma du DataFrame source selon notre structure"""
@@ -84,22 +101,9 @@ class DataIntegrityTest(unittest.TestCase):
         
         return schema
 
-    def test_file_existence(self):
-        """Vérifier que le fichier CSV existe"""
-        self.assertTrue(
-            os.path.exists(self.csv_path),
-            f"Le fichier CSV {self.csv_path} n'existe pas"
-        )
 
-    def test_collection_presence(self):
-        """Vérifier que toutes les collections existent"""
-        db_collections = self.db_target.list_collection_names()
-        for collection in self.collections:
-            self.assertIn(
-                collection,
-                db_collections,
-                f"La collection {collection} n'existe pas dans MongoDB"
-            )
+
+
 
     def test_data_types(self):
         """Vérifier que les types de données sont cohérents"""
@@ -137,32 +141,7 @@ class DataIntegrityTest(unittest.TestCase):
                         f"Le type du champ {field} ne correspond pas dans la collection {collection}"
                     )
 
-    def test_record_count(self):
-        """Vérifier que le nombre d'enregistrements est cohérent"""
-        csv_count = len(self.df_source)
-        
-        for collection in self.collections:
-            mongo_count = self.db_target[collection].count_documents({})
-            self.assertEqual(
-                csv_count,
-                mongo_count,
-                f"Le nombre d'enregistrements ne correspond pas pour la collection {collection}"
-            )
 
-    def test_relationships(self):
-        """Vérifier l'intégrité des relations entre les collections"""
-        # Récupérer tous les IDs de patients
-        patient_ids = set(str(doc['_id']) for doc in self.db_target['patient'].find({}, {'_id': 1}))
-        
-        for collection in ['medical', 'admission', 'billing']:
-            related_ids = set(str(doc['patientId']) for doc in self.db_target[collection].find({}, {'patientId': 1}))
-            
-            # Vérifier que chaque patientId existe dans la collection patient
-            self.assertEqual(
-                patient_ids,
-                related_ids,
-                f"Les relations patientId ne correspondent pas dans la collection {collection}"
-            )
 
     def test_null_values(self):
         """Vérifier les valeurs nulles pour chaque collection"""

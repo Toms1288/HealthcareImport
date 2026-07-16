@@ -9,4 +9,4 @@ COPY scripts /app/scripts
 COPY data /app/data
 COPY tests /app/tests
 
-CMD ["bash", "-c", "python scripts/data_prep.py && python scripts/import_mongo.py"]
+CMD ["bash", "-c", "python tests/test_connection.py && python scripts/data_prep.py && python scripts/import_mongo.py"]

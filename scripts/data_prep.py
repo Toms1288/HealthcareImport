@@ -6,7 +6,8 @@ from datetime import datetime as dt
 # Fonction pour nettoyer les données
 def clean_data(file_path):
     data = pd.read_csv(file_path)
-    # Supprimer les doublons et les valeurs manquantes
+
+    # Supprimer les doublons
     print(f"Nombre de lignes en doublon supprimées : {data.duplicated().sum()}")
     data = data.drop_duplicates()
     # Ajout d'un index unique pour chaque patient
@@ -15,7 +16,7 @@ def clean_data(file_path):
     data = data.rename(columns={"patient_id":"patient_id","Name":"name","Age":"age","Gender":"gender","Blood Type":"blood_type",
             "Medical Condition":"medical_condition","Date of Admission":"date_of_admission","Doctor":"doctor","Hospital":"hospital","Insurance Provider":"insurance_provider",
             "Billing Amount":"billing_amount","Room Number":"room_number","Admission Type":"admission_type","Discharge Date":"discharge_date","Medication":"medication","Test Results":"test_results"})
-     # Normaliser les noms, enlevement des civilités
+     # Normaliser les noms, suppression des civilités
     data['name'] = data['name'].str.title()
     data['name'] = data['name'].str.strip()
     data['name'] = data['name'].str.replace(r'\b(Mr\.|Dr\.|Mrs\.|Ms\.)\s*', '', regex=True)

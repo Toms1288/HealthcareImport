@@ -1,7 +1,8 @@
 from pymongo import MongoClient
 import os
 import unittest
-
+from typing import Dict
+from datetime import datetime
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -11,35 +12,61 @@ class TestIntegrite(unittest.TestCase):
         cls.client = MongoClient(os.getenv('MONGODB_URI'))
         cls.db = cls.client.test_database
         cls.collection = cls.db.test_collection
+        
+    def test_collection_presence(self):
+        """Vérifier que toutes les collections existent"""
+        db_collections = self.db_target.list_collection_names()
+        for collection in self.collections:
+            self.assertIn(
+                collection,
+                db_collections,
+                f"La collection {collection} n'existe pas dans MongoDB"
+            )
+            
+    def test_record_count(self):
+        """Vérifier que le nombre d'enregistrements est cohérent"""
+        csv_count = len(self.output_df)
+        
+        for collection in self.collections:
+            mongo_count = self.db_target[collection].count_documents({})
+            self.assertEqual(
+                csv_count,
+                mongo_count,
+                f"Le nombre d'enregistrements ne correspond pas pour la collection {collection}"
+            )
 
-    def setUp(self):
-        """Nettoie la collection avant chaque test"""
-        self.collection.delete_many({})
 
-    def test_insert_and_find(self):
-        """Test d'insertion et de recherche"""
-        test_data = {"name": "test", "value": 123}
-        result = self.collection.insert_one(test_data)
-        self.assertTrue(result.inserted_id is not None)
-        found = self.collection.find_one({"name": "test"})
-        self.assertIsNotNone(found)
-        self.assertEqual(found["value"], 123)
-
-    def test_delete(self):
-        """Test de suppression"""
-        test_data = [
-            {"name": "test1", "value": 111},
-            {"name": "test2", "value": 222},
-            {"name": "test3", "value": 333}
-        ]
-
-        self.collection.insert_many(test_data)
-        initial_count = self.collection.count_documents({})
-        delete_result = self.collection.delete_one({"name": "test1"})
-        self.assertEqual(delete_result.deleted_count, 1)
-        self.assertEqual(self.collection.count_documents({}), initial_count - 1)
-        self.assertIsNone(self.collection.find_one({"name": "test1"}))
-
+    def get_mongo_schema(self) -> Dict[str, Dict[str, str]]:
+        """Extraire le schéma des collections MongoDB"""
+        schema = {}
+        
+        def extract_type(value):
+            if value is None:
+                return 'null'
+            elif isinstance(value, dict):
+                return 'object'
+            elif isinstance(value, bool):
+                return 'bool'
+            elif isinstance(value, int):
+                return 'int'
+            elif isinstance(value, float) or isinstance(value, Decimal128):
+                return 'float'
+            elif isinstance(value, datetime):
+                return 'datetime'
+            elif isinstance(value, str):
+                return 'str'
+            return type(value).__name__
+        
+        for collection in self.collections:
+            schema[collection] = {}
+            sample_doc = self.db_target[collection].find_one()
+            if sample_doc:
+                for field, value in sample_doc.items():
+                    if field not in ['_id', 'patientId']:
+                        schema[collection][field] = extract_type(value)
+        
+        return schema
+    
     def tearDownClass(cls):
         """Nettoyage après tous les tests"""
         # cls.client.drop_database("test_database")

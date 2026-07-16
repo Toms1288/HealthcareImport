@@ -21,7 +21,9 @@ def import_to_mongodb(file_path, mongodb_uri, db_name, collection_name):
     chunk_size = 1000
     num_chunks = math.ceil((len(df) / chunk_size))
     chunks = []
-    
+    # Compter le nombre total de documents avant l'importation
+    count = db[collection_name].count_documents({})
+    print(f"Total documents in collection avant l'import: {count}")    
     
     # Créer les blocs de données   
     for i in range(num_chunks):
@@ -30,6 +32,7 @@ def import_to_mongodb(file_path, mongodb_uri, db_name, collection_name):
         chunks.append(df[start:stop])
     # Itérer sur les blocs pour les insérer dans MongoDB    
     for i in range(num_chunks):
+        # Vérification des doublons avant l'insertion
         existing_patients = collection.distinct("patient_id")
         new_records = [r for r in chunks[i].to_dict('records') if r["patient_id"] not in existing_patients]
         if new_records==[]:
@@ -41,9 +44,9 @@ def import_to_mongodb(file_path, mongodb_uri, db_name, collection_name):
         except BulkWriteError as bwe:
                 print(f"Chunk {i+1}/{num_chunks} import encountered errors: {bwe.details}")
 
-    # Compter le nombre total de documents
+    # Compter le nombre total de documents après l'importation
     count = db[collection_name].count_documents({})
-    print(f"Total documents in collection: {count}")
+    print(f"Total documents in collection après l'import: {count}")
     
 if __name__ == "__main__":
     # Charger les variables d'environnement
