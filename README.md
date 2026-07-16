@@ -58,7 +58,7 @@ docker ps
 ## 📁 Structure du projet
 
 ```
-Projet 5/
+HealthcareImport-2/
 ├── 📄 docker-compose.yml           # Configuration orchestration services
 ├── 📄 Dockerfile                   # Image Docker Python
 ├── 📄 README.md                    # Cette documentation
