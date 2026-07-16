@@ -42,12 +42,14 @@ Les services démarreront automatiquement :
   - App : `user` / `user` (authSource: `DataSoluTech`)
 - **Redémarrage** : Automatique (`always`)
 - **Initialisation** : Script `mongo-init.js`
+- **Healthcheck** : Ping MongoDB toutes les 10s (5s timeout, 5 retries)
 
 #### Python Service (Image custom)
 - **Build** : Basée sur le `Dockerfile` du projet
 - **Fonction** : Nettoie les données CSV et importe dans MongoDB
 - **Dépendances** : pandas, pymongo, python-dotenv
-- **Dépend de** : Service MongoDB (attend son démarrage)
+- **Dépend de** : Service MongoDB (attend son démarrage et sa bonne santé)
+- **Healthcheck** : Ping sur endpoint `/health` toutes les 30s
 
 ### Volumes
 
@@ -110,6 +112,23 @@ Au premier démarrage, le script `mongo-init.js` :
 - Destination : `DataSoluTech.Healthcare`
 
 ## 🛠️ Commandes utiles
+
+### Healthchecks
+
+```bash
+# Vérifier le statut de santé des services
+docker compose ps
+
+# Voir le détail du healthcheck de MongoDB
+docker inspect projet_5-mongodb-1 --format='{{.State.Health.Status}}'
+
+# Voir le détail du healthcheck du service Python
+docker inspect projet_5-python_service-1 --format='{{.State.Health.Status}}'
+
+# Logs complets d'un service
+docker compose logs mongodb
+docker compose logs python_service
+```
 
 ### Gestion des conteneurs
 
@@ -226,6 +245,22 @@ Projet 5/
 ```
 
 ## 🐛 Dépannage
+
+### Healthchecks en erreur
+
+**MongoDB healthcheck échoue** :
+```bash
+# Vérifier qu'il écoute correctement
+docker compose exec mongodb mongosh -u root -p root --authenticationDatabase admin --eval "db.adminCommand('ping')"
+
+# Si échec, redémarrer
+docker compose restart mongodb
+```
+
+**Python healthcheck échoue** :
+- Vérifier que votre app Python a un endpoint `/health`
+- Si l'app n'expose pas d'endpoint, modifier le healthcheck du docker-compose pour tester avec `python -c "print('healthy')"`
+- Vérifier les logs : `docker compose logs python_service`
 
 ### Erreur : "Connection refused" (python_service)
 
@@ -373,3 +408,7 @@ Thomas LECLERCQ
 ---
 
 **Dernière mise à jour** : 12/07/2026
+
+**Changements récents** :
+- Ajout des healthchecks Docker Compose (MongoDB et Python)
+- Mélioration de la surveillance de l'état des services

@@ -9,10 +9,6 @@ db.createUser({
             role: "readWrite",
             db: process.env.MONGO_INITDB_DATABASE
         },
-        {
-            role: "dbAdmin",
-            db: process.env.MONGO_INITDB_DATABASE
-        },
     ],
     mechanisms: ["SCRAM-SHA-256"]  // Utilise SHA-256 pour le hachage
 });
@@ -69,7 +65,7 @@ db.createCollection(process.env.COLLECTION, {
                description: "Medical condition must be a string."
             },
             date_of_admission: {
-               bsonType: "Date",
+               bsonType: "date",
                description: "Date of admission must be a date"
             },
             doctor: {
@@ -86,8 +82,7 @@ db.createCollection(process.env.COLLECTION, {
             },
             billing_amount: {
                bsonType: "double",
-               minimum: 0,
-               description: "Billing amount must be a non-negative number."
+               description: "Billing amount must be a number."
             },
             room_number: {
                bsonType: "int",
@@ -100,7 +95,7 @@ db.createCollection(process.env.COLLECTION, {
                description: "Admission type must be one of the specified values."
             },
             discharge_date: {
-               bsonType: "Date",
+               bsonType: "date",
                description: "Discharge date must be a date"
             },
             medication: {
@@ -116,3 +111,8 @@ db.createCollection(process.env.COLLECTION, {
       }
    }
 });
+
+// Création d'un index unique sur le champ "patient_id" pour éviter les doublons
+db[process.env.COLLECTION].createIndex({ patient_id: 1 }, { unique: true });
+
+

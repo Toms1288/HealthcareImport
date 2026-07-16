@@ -5,7 +5,8 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-COPY script /app/script
-COPY database /app/data
+COPY scripts /app/scripts
+COPY data /app/data
+COPY tests /app/tests
 
-CMD ["bash", "-c", "python script/data_prep.py && python script/import_mongo.py"]
+CMD ["bash", "-c", "python scripts/data_prep.py && python scripts/import_mongo.py"]

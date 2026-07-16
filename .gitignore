@@ -15,8 +15,13 @@ wheels/
 import.ipynb
 # Dossier
 Livrables/
-./data/cleaned_healthcare_dataset.csv
+./database/cleaned_healthcare_dataset.csv
 README.md
 Projet_5_Presentation.pptx
 create_presentation.py
 Livrables.zip
+import.ipynb
+./data
+./script
+import.ipynb
+data/cleaned_healthcare_dataset.csv

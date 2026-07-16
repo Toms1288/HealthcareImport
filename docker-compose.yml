@@ -4,7 +4,7 @@ services:
     container_name: mongodb
     restart: always
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     volumes:
       - mongodb_data:/data/db
       - ./data:/data
@@ -13,16 +13,23 @@ services:
       - .env
     networks:
       - app_network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   python_service:
     build:
       context: .
     container_name: python_service
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
     volumes:
       - ./scripts:/app/scripts
-      - ./data:/app/database
+      - ./data:/app/data
     env_file:
       - .env
     networks:
