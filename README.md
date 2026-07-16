@@ -389,7 +389,7 @@ db.Healthcare.createIndex({ patient_id: 1 }, { unique: true })
 - Type : Unique
 - Champs : `patient_id` (ascendant)
 - Raison : Éviter les doublons de patients
-- Performance : Accélère les recherches par patient_id
+- Performance : Accélère les recherches par patient_id et evite les doublons lors d'un deuxième import de données
 
 **Vérifification** :
 
@@ -484,17 +484,13 @@ Le script `scripts/data_prep.py` applique les transformations suivantes :
 #### 1️⃣ Analyse des valeurs manquantes
 
 ```
-Valeurs manquantes par colonne:
-Doctor                      1512 (4.8%)
-Discharge Date              1023 (3.2%)
-Insurance Provider            451 (1.4%)
-...
+Valeurs manquantes par colonne: 0
 ```
 
 #### 2️⃣ Suppression des doublons
 
 ```
-Nombre de lignes en doublon supprimées: 42
+Nombre de lignes en doublon supprimées: 534
 ```
 
 #### 3️⃣ Génération d'ID unique
@@ -507,7 +503,7 @@ Résultat : Chaque ligne reçoit un `patient_id` unique de 0 à N-1.
 
 #### 4️⃣ Renommage des colonnes
 
-Mappage des noms de colonnes CSV vers MongoDB :
+Mappage des noms de colonnes CSV avant nettoyage vers MongoDB :
 
 | CSV | MongoDB |
 |-----|---------|
@@ -561,9 +557,8 @@ data['discharge_date'] = pd.to_datetime(data['discharge_date'], errors="coerce")
 
 | Étape | Input | Output | Variation |
 |-------|-------|--------|-----------|
-| Format CSV | 31,506 lignes | 31,506 | - |
-| Doublons supprimés | 31,506 | 31,464 | -42 (-0.13%) |
-| Nettoyage final | 31,464 | 31,464 | ✅ Stable |
+| Format CSV | 55500 lignes | 54966 | 534 |
+| Nettoyage final | 54966 | 54966 | ✅ Stable |
 
 ### Étapes de migration vers MongoDB
 
@@ -593,12 +588,12 @@ collection.create_index("patient_id", unique=True)
 
 ```
 Taille du chunk : 1000 documents
-Nombre total de chunks : 32 (31,464 / 1000 = 31.464)
+Nombre total de chunks : 55 (54966 / 1000 = 54.966)
 Chunk 1 : 1000 documents
 Chunk 2 : 1000 documents
 ...
-Chunk 31 : 1000 documents
-Chunk 32 : 464 documents
+Chunk 54 : 1000 documents
+Chunk 55 : 966 documents
 ```
 
 #### 5️⃣ Vérification des doublons avant insertion
@@ -622,8 +617,7 @@ except BulkWriteError as bwe:
 
 ```
 Avant l'import : 0 documents
-Après l'import : 31,464 documents
-Durée estimée : 30-60 secondes
+Après l'import : 54966 documents
 ```
 
 ### Procédure de réinitialisation complète
@@ -772,7 +766,7 @@ def test_null_values():
 
 Tests d'intégrité générale des données.
 
-#### Test 3.1 : Présence des collections
+#### Test 3.1 : Présence de la collection
 
 ```python
 def test_collection_presence():
@@ -807,6 +801,20 @@ docker compose exec python_service python tests/test_connection.py
 # Exécuter avec verbose
 docker compose exec python_service python -m unittest tests.test_connection -v
 ```
+## 10 Erreurs fréquentes avec causes et fixes
+
+| # | Erreur | Cause | Commande rapide |
+|---|--------|-------|-----------------|
+| 1 | Connection refused | MongoDB non prêt | `sleep 10 && docker compose up python_service` |
+| 2 | Authentication failed | Mauvais credentials | `cat .env \| grep MONGO` |
+| 3 | Duplicate key | Données déjà importées | `docker compose exec mongodb mongosh --eval "use DataSoluTech; db.Healthcare.deleteMany({})"` |
+| 4 | File not found | CSV manquant | `mkdir -p data && cp healthcare.csv ./data/` |
+| 5 | Schema validation | Données invalides | Vérifier age 0-150, gender, blood_type |
+| 6 | Out of memory | RAM insuffisante | Augmenter `mem_limit` dans docker-compose.yml |
+| 7 | Healthcheck failed | Service pas ready | `docker compose logs python_service` |
+| 8 | Port already in use | Port 27017 utilisé | `lsof -i :27017` puis `kill -9 <PID>` |
+| 9 | No space left | Disque plein | `docker system prune -a` |
+| 10 | Network not found | Réseau corrompu | `docker compose down --remove-orphans` |
 
 ---
 ## ⚙️ Commandes utiles
@@ -863,7 +871,7 @@ docker system prune -a
 
 ### Fichiers du projet
 - `.env` - Variables d'environnement (LOCAL)
-- `.env.sample` - Modèle d'exemple
+- `.env.sample` - Modèle d'env
 - `docker-compose.yml` - Configuration des services
 - `Dockerfile` - Image Python
 - `mongo-init.js` - Script d'initialisation MongoDB

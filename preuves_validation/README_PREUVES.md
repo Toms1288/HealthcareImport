@@ -20,7 +20,7 @@ Les logs montrent un nettoyage et un import sans erreur.
 
 ## 4.Nombres de lignes avant et après nettoyage
 
-Avant le nettoyage, le dataframe compte 55000 lignes.
+Avant le nettoyage, le dataframe compte 55500 lignes.
 Suite à la suppression des 534 doublons sont crées 54966 documents.
 106 affichent une valeur négatif pour billing_amount, à vérifier avec le métier.
 
