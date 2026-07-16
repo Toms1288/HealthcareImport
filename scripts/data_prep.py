@@ -6,7 +6,11 @@ from datetime import datetime as dt
 # Fonction pour nettoyer les données
 def clean_data(file_path):
     data = pd.read_csv(file_path)
-
+    # Analyse des valeurs manquantes
+    missings = pd.DataFrame(data.isnull().sum(), columns=['missing_count'])
+    missings['missing_percentage'] = data.isnull().mean()*100
+    missings.sort_values(by='missing_count', ascending=False)
+    print(f"Valeurs manquantes par colonne:\n{missings}")
     # Supprimer les doublons
     print(f"Nombre de lignes en doublon supprimées : {data.duplicated().sum()}")
     data = data.drop_duplicates()

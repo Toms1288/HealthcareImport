@@ -9,14 +9,18 @@ class TestConnection(unittest.TestCase):
     def setUp(self):
             """Configuration initiale avant chaque test"""
             self.uri = os.getenv('MONGODB_URI')
+            self.uri_root = os.getenv('MONGODB_URI_ROOT')
             self.db_name = os.getenv('MONGO_INITDB_DATABASE')
             self.invalid_uri = "mongodb://invalid_user:invalid_pass@localhost:27017"
                 
     def test_connection_invalid_uri(self):
         """Test d'une connexion avec une URI invalide"""
         try:
+            # Tentative de connexion avec une URI invalide
             client = MongoClient(self.invalid_uri, serverSelectionTimeoutMS=1000)
+            # Force une connexion en exécutant une commande
             client.admin.command('ping')
+            # Si la connexion réussit, le test échoue
             self.fail("La connexion avec URI invalide a réussi, ce qui est inattendu")
         except errors.ConnectionFailure:
             self.assertTrue(True)
@@ -35,7 +39,7 @@ class TestConnection(unittest.TestCase):
             # Force une connexion en exécutant une commande
             client.admin.command('ping')
 
-            # Si on arrive ici, la connexion est réussie
+            # Si True, la connexion est réussie
             self.assertTrue(True)
             print("Connexion à MongoDB réussie")
             
@@ -47,7 +51,18 @@ class TestConnection(unittest.TestCase):
                 client.close()
 
 
-            
+    def test_users_credentials(self):
+        """Vérification des identifiants utilisateurs crées dans MongoDB"""
+        try:
+            client = MongoClient(self.uri_root, serverSelectionTimeoutMS=1000)
+            db = client[self.db_name]
+            users_info = db.command("usersInfo")
+            for user in users_info['users']:
+                print(f"Utilisateur: {user['user']}, Rôles: {user['roles']}")
+        finally:
+            if 'client' in locals():
+                client.close()
+                
     def test_database_CRUD(self):
         """Test de création, de lecture, de mise à jour et de suppression dans une base de données"""
         try:

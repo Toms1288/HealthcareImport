@@ -10,23 +10,13 @@ from bson import ObjectId, Decimal128
 class DataIntegrityTest(unittest.TestCase):
     def setUp(self):
         # Chemin vers le fichier CSV source
-        self.input_path = os.getenv("INPUT_DATA_PATH")
         self.output_path = os.getenv("OUTPUT_DATA_PATH")
         # Charger les données CSV
-        self.df_source = pd.read_csv(self.input_path)
         self.df_final = pd.read_csv(self.output_path)
         
         # Convertir les types de données pandas en types Python standards
-        self.df_source = self.df_source.replace({np.nan: None})
         self.df_final = self.df_final.replace({np.nan: None})
     
-    def test_input_csv_existence(self.input_path):
-        """Vérifier que le fichier CSV existe"""
-        self.assertTrue(
-            os.path.exists(self.input_path),
-            f"Le fichier CSV {self.input_path} n'existe pas"
-        )
-
     def test_output_csv_existence(self.output_path):
         """Vérifier que le fichier CSV existe"""
         self.assertTrue(
@@ -39,21 +29,22 @@ class DataIntegrityTest(unittest.TestCase):
     
 
     def get_csv_schema(self) -> Dict[str, Dict[str, str]]:
-        """Extraire le schéma du DataFrame source selon notre structure"""
-        schema = {
-            'patient': {},
-            'medical': {},
-            'admission': {},
-            'billing': {}
-        }
+        """Extraire le schéma du DataFrame source et vérification de la présence des colonnes requises"""
+
         
         # Mapping des colonnes vers les collections
-        mappings = {
-            'patient': ['Name', 'Age', 'Gender', 'Blood Type'],
-            'medical': ['Medical Condition', 'Medication', 'Test Results', 'Doctor'],
-            'admission': ['Date of Admission', 'Discharge Date', 'Admission Type', 'Room Number', 'Hospital'],
-            'billing': ['Insurance Provider', 'Billing Amount']
-        }
+        required = [
+                    "patient_id",
+                    "name",
+                    "age",
+                    "gender",
+                    "blood_type",
+                    "medical_condition",
+                    "date_of_admission",
+                    "billing_amount",
+                    "discharge_date",
+                    "test_results"
+                ]
         
         for collection, fields in mappings.items():
             for field in fields:
